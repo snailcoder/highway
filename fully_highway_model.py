@@ -2,11 +2,12 @@ import tensorflow as tf
 
 class FullyHighwayModel(object):
     def __init__(self, input_size, highway_hidden_size,
-                 num_highway_layer, num_class, learning_rate):
+                 num_highway_layer, num_class):
         self.highway_hidden_size = highway_hidden_size
         self.num_highway_layer = num_highway_layer
         self.num_class = num_class
-        self.learning_rate = learning_rate
+        self.learning_rate = tf.placeholder(
+            tf.float32, shape=[], name="learning_rate")
         self.input_X = tf.placeholder(
             tf.float32, [None, input_size], name="input_X")
         self.input_y = tf.placeholder(
@@ -49,7 +50,6 @@ class FullyHighwayModel(object):
             return train_op
 
     def inference(self, X):
-        with tf.
         logits = self._plain_layer(X, self.highway_hidden_size, tf.sigmoid)
         for _ in range(self.num_highway_layer):
             logits = self._highway_layer(logits, self.highway_hidden_size,

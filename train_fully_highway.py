@@ -25,7 +25,7 @@ def main(_):
         with sess.as_default():
             highway = fully_highway_model.FullyHighwayModel(
                 784, FLAGS.highway_hidden_size,
-                FLAGS.num_highway_layer, FLAGS.num_class, FLAGS.learning_rate)
+                FLAGS.num_highway_layer, FLAGS.num_class)
             X = highway.get_input_X()
             logits = highway.inference(X)
             loss_op = highway.loss(logits)
@@ -42,14 +42,16 @@ def main(_):
                         [train_op, loss_op, global_step],
                         feed_dict={
                             highway.input_X: batch_X,
-                            highway.input_y: data_utils.onehot(batch_y, FLAGS.num_class)})
+                            highway.input_y: data_utils.onehot(batch_y, FLAGS.num_class),
+                            highway.learning_rate: FLAGS.learning_rate})
                     epoch_train_loss += loss / num_batch
                 if epoch % FLAGS.eval_step == 0 or epoch == FLAGS.num_epoch - 1:
                     epoch_eval_accuracy, _ = sess.run(
                         [eval_op, global_step],
                         feed_dict={
                             highway.input_X: mnist.test.images,
-                            highway.input_y: data_utils.onehot(mnist.test.labels, FLAGS.num_class)})
+                            highway.input_y: data_utils.onehot(mnist.test.labels, FLAGS.num_class),
+                            highway.learning_rate: FLAGS.learning_rate})
                     print (("Epoch %d, training loss:%f, validation accuracy:%f")
                            % (epoch, epoch_train_loss, epoch_eval_accuracy))
 
