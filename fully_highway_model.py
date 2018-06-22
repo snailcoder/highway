@@ -2,12 +2,14 @@ import tensorflow as tf
 
 class FullyHighwayModel(object):
     def __init__(self, input_size, highway_hidden_size,
-                 num_highway_layer, num_class):
+                 num_highway_layer, num_class, learning_rate,
+                 decay_steps, decay_rate):
         self.highway_hidden_size = highway_hidden_size
         self.num_highway_layer = num_highway_layer
         self.num_class = num_class
-        self.learning_rate = tf.placeholder(
-            tf.float32, shape=[], name="learning_rate")
+        self.learning_rate = learning_rate
+        self.decay_steps = decay_steps
+        self.decay_rate = decay_rate
         self.input_X = tf.placeholder(
             tf.float32, [None, input_size], name="input_X")
         self.input_y = tf.placeholder(
@@ -44,7 +46,10 @@ class FullyHighwayModel(object):
 
     def training(self, loss, global_step):
         with tf.name_scope("trainning"):
-            optimizer = tf.train.MomentumOptimizer(self.learning_rate, 0.9)
+            learning_rate = tf.train.exponential_decay(
+                self.learning_rate, global_step, self.decay_steps,
+                self.decay_rate, staircase=True)
+            optimizer = tf.train.MomentumOptimizer(learning_rate, 0.9)
             # optimizer = tf.train.GradientDescentOptimizer(
             #     learning_rate=self.learning_rate)
             train_op = optimizer.minimize(loss, global_step=global_step)
