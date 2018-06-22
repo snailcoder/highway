@@ -44,8 +44,9 @@ class FullyHighwayModel(object):
 
     def training(self, loss, global_step):
         with tf.name_scope("trainning"):
-            optimizer = tf.train.GradientDescentOptimizer(
-                learning_rate=self.learning_rate)
+            optimizer = tf.train.MomentumOptimizer(self.learning_rate, 0.9)
+            # optimizer = tf.train.GradientDescentOptimizer(
+            #     learning_rate=self.learning_rate)
             train_op = optimizer.minimize(loss, global_step=global_step)
             return train_op
 

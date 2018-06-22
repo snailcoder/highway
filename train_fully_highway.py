@@ -4,7 +4,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 import data_utils
 import fully_highway_model
 
-tf.flags.DEFINE_float("learning_rate", 0.001, "Learning rate.")
+tf.flags.DEFINE_float("learning_rate", 0.01, "Learning rate.")
 tf.flags.DEFINE_integer("highway_hidden_size", 50, "Highway block size.")
 tf.flags.DEFINE_integer("num_highway_layer", 9, "Number of highway layer.")
 tf.flags.DEFINE_integer("num_class", 10, "Number of classes.")
