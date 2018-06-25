@@ -6,12 +6,12 @@ import fully_highway_model
 
 tf.flags.DEFINE_float("learning_rate", 0.01,
                       "Initial learning rate. It will be decayed during training.")
-tf.flags.DEFINE_integer("decay_steps", 1000,
-                        "Decay learning rate every this steps.")
-tf.flags.DEFINE_float("decay_rate", 0.9,
+tf.flags.DEFINE_integer("decay_epochs", 500,
+                        "Decay learning rate every this epoch.")
+tf.flags.DEFINE_float("decay_rate", 0.96,
                       "Decay learning rate at this rate.")
 tf.flags.DEFINE_integer("highway_hidden_size", 50, "Highway block size.")
-tf.flags.DEFINE_integer("num_highway_layer", 9, "Number of highway layer.")
+tf.flags.DEFINE_integer("num_highway_layer", 20, "Number of highway layer.")
 tf.flags.DEFINE_integer("num_class", 10, "Number of classes.")
 tf.flags.DEFINE_string("data_dir", "/tmp/tensorflow/mnist/input_data",
                        "Directory for storing input data")
@@ -31,12 +31,14 @@ def main(_):
             highway = fully_highway_model.FullyHighwayModel(
                 784, FLAGS.highway_hidden_size,
                 FLAGS.num_highway_layer, FLAGS.num_class,
-                FLAGS.learning_rate, FLAGS.decay_steps, FLAGS.decay_rate)
+                FLAGS.learning_rate)
             X = highway.get_input_X()
             logits = highway.inference(X)
             loss_op = highway.loss(logits)
             global_step = tf.Variable(0, name="global_step", trainable=False)
-            train_op = highway.training(loss_op, global_step)
+            train_op = highway.training(
+                loss_op, global_step, FLAGS.batch_size,
+                FLAGS.decay_rate, mnist.train.num_examples, FLAGS.decay_epochs)
             eval_op = highway.evaluate(logits)
             sess.run(tf.global_variables_initializer())
             num_batch = mnist.train.num_examples / FLAGS.batch_size
@@ -44,15 +46,15 @@ def main(_):
                 epoch_train_loss = 0.0
                 for _ in range(num_batch):
                     batch_X , batch_y = mnist.train.next_batch(FLAGS.batch_size)
-                    _, loss, _ = sess.run(
-                        [train_op, loss_op, global_step],
+                    _, loss  = sess.run(
+                        [train_op, loss_op],
                         feed_dict={
                             highway.input_X: batch_X,
                             highway.input_y: data_utils.onehot(batch_y, FLAGS.num_class)})
                     epoch_train_loss += loss / num_batch
                 if epoch % FLAGS.eval_step == 0 or epoch == FLAGS.num_epoch - 1:
-                    epoch_eval_accuracy, _ = sess.run(
-                        [eval_op, global_step],
+                    epoch_eval_accuracy = sess.run(
+                        eval_op,
                         feed_dict={
                             highway.input_X: mnist.test.images,
                             highway.input_y: data_utils.onehot(mnist.test.labels, FLAGS.num_class)})

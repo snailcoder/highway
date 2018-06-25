@@ -2,14 +2,11 @@ import tensorflow as tf
 
 class FullyHighwayModel(object):
     def __init__(self, input_size, highway_hidden_size,
-                 num_highway_layer, num_class, learning_rate,
-                 decay_steps, decay_rate):
+                 num_highway_layer, num_class, learning_rate):
         self.highway_hidden_size = highway_hidden_size
         self.num_highway_layer = num_highway_layer
         self.num_class = num_class
         self.learning_rate = learning_rate
-        self.decay_steps = decay_steps
-        self.decay_rate = decay_rate
         self.input_X = tf.placeholder(
             tf.float32, [None, input_size], name="input_X")
         self.input_y = tf.placeholder(
@@ -44,11 +41,13 @@ class FullyHighwayModel(object):
     def get_input_y(self):
         return self.input_y
 
-    def training(self, loss, global_step):
+    def training(self, loss, global_step, batch_size,
+                 decay_rate, decay_steps, decay_epochs):
         with tf.name_scope("trainning"):
             learning_rate = tf.train.exponential_decay(
-                self.learning_rate, global_step, self.decay_steps,
-                self.decay_rate, staircase=True)
+                self.learning_rate, global_step * batch_size // decay_epochs,
+                decay_steps, decay_rate, staircase=True)
+            # Using SGD with momentum.
             optimizer = tf.train.MomentumOptimizer(learning_rate, 0.9)
             # optimizer = tf.train.GradientDescentOptimizer(
             #     learning_rate=self.learning_rate)
