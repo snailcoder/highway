@@ -17,12 +17,14 @@ class FullyHighwayModel(object):
         W_H = tf.Variable(
             tf.truncated_normal(
                 [input_size, hidden_size]), name="W_H")
-        b_H = tf.Variable(tf.zeros([hidden_size], tf.float32), name="b_H")
+        b_H = tf.Variable(
+            tf.add(tf.zeros([hidden_size], tf.float32), -3), name="b_H")
         H_out = H_activation(tf.nn.xw_plus_b(X, W_H, b_H, name="H_out"))
         W_T = tf.Variable(
             tf.truncated_normal(
                 [input_size, hidden_size]), name="W_T")
-        b_T = tf.Variable(tf.zeros([hidden_size], tf.float32), name="b_T")
+        b_T = tf.Variable(
+            tf.add(tf.zeros([hidden_size], tf.float32), -3), name="b_T")
         T_out = T_activation(tf.nn.xw_plus_b(X, W_T, b_T, name="T_out"))
         C_out = 1 - T_out
         output = tf.multiply(H_out, T_out) + tf.multiply(X, C_out)
